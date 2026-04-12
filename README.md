@@ -58,6 +58,10 @@ python analyze.py TSLA --ai
 
 # Post the report to Discord
 python analyze.py TSLA --ai --discord
+
+# Re-render a previously saved JSON result (skips the data fetch)
+python analyze.py --from-json result.json
+cat result.json | python analyze.py --from-json -
 ```
 
 ### Flags
@@ -71,6 +75,7 @@ python analyze.py TSLA --ai --discord
 | `--ai` | off | Append AI research section |
 | `--discord` | off | Post output to `DISCORD_WEBHOOK_URL` |
 | `--discord-url` | — | Override the env webhook |
+| `--from-json SRC` | — | Render from existing JSON result — file path, `-` for stdin, or raw JSON string |
 
 ### `.env`
 
