@@ -13,16 +13,15 @@ import json
 import os
 import sys
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import ta_core
 import ai_research
 import discord_post
 
 
 def main():
+    from dotenv import load_dotenv
+    load_dotenv()
+
     parser = argparse.ArgumentParser(description="Stock Technical Analysis")
     parser.add_argument("ticker", help="Stock ticker symbol (e.g. AAPL, TSLA, 2330.TW)")
     parser.add_argument("--period",   default="6mo", help="Data period: 1mo 3mo 6mo 1y 2y (default: 6mo)")

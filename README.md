@@ -9,6 +9,8 @@ additive, not a replacement.
 
 ## Install
 
+**As a CLI / standalone:**
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -17,6 +19,27 @@ pip install -r requirements.txt
 cp .env.example .env
 # edit .env and fill in keys you want to use
 ```
+
+**As a library, from Git** (for consuming projects):
+
+```bash
+pip install git+https://github.com/felix920506/stock-ta.git
+# pin to a tag:
+pip install git+https://github.com/felix920506/stock-ta.git@v0.1.0
+```
+
+Then:
+
+```python
+import ta_core
+result = ta_core.analyze("AAPL", period="6mo", interval="1d")
+print(result["score"], result["label"])
+
+import ai_research  # requires OPENAI_API_KEY in env
+result["ai_research"] = ai_research.research(result)
+```
+
+The installed package also exposes a `stock-ta` console command equivalent to `python analyze.py`.
 
 ## Usage
 

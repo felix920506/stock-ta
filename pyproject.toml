@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stock-ta"
+version = "0.1.0"
+description = "Technical analysis CLI and library for equities, with optional AI company research"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "yfinance",
+    "pandas",
+    "ta",
+    "openai>=1.0",
+    "python-dotenv",
+    "requests",
+]
+
+[project.scripts]
+stock-ta = "analyze:main"
+
+[project.urls]
+Homepage = "https://github.com/felix920506/stock-ta"
+
+[tool.setuptools]
+py-modules = ["analyze", "ta_core", "ai_research", "discord_post"]
