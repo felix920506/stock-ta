@@ -6,6 +6,7 @@ scores signals. Report rendering lives in report.py.
 """
 
 import json
+import os
 import sys
 from datetime import datetime
 
@@ -20,6 +21,18 @@ except ImportError as e:
     print(json.dumps({"error": f"Missing dependency: {e}. Run: pip install -r requirements.txt"}))
     sys.exit(1)
 
+# yfinance-cache is a smarter drop-in: understands market hours, refetches
+# only when new bars are expected, and greatly reduces rate-limit risk.
+# Disable with STOCK_TA_CACHE_DISABLE=1 to fall back to plain yfinance.
+if os.environ.get("STOCK_TA_CACHE_DISABLE"):
+    _Ticker = yf.Ticker
+else:
+    try:
+        import yfinance_cache as yfc
+        _Ticker = yfc.Ticker
+    except ImportError:
+        _Ticker = yf.Ticker
+
 
 def last(series, n=1):
     """Get last N non-null values from a Series."""
@@ -31,7 +44,7 @@ def last(series, n=1):
 
 def analyze(ticker: str, period: str = "6mo", interval: str = "1d") -> dict:
     """Fetch data, compute indicators, score, and return a complete result dict."""
-    tk = yf.Ticker(ticker)
+    tk = _Ticker(ticker)
     df = tk.history(period=period, interval=interval)
 
     if df.empty:

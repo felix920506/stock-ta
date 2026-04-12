@@ -89,6 +89,17 @@ DISCORD_WEBHOOK_URL=
 `OPENAI_BASE_URL` accepts any OpenAI-compatible endpoint — OpenAI,
 OpenRouter, Perplexity, Groq, LM Studio, Ollama, etc.
 
+### Caching
+
+Uses [`yfinance-cache`](https://pypi.org/project/yfinance-cache/) when
+installed — it's a smarter drop-in for `yfinance` that understands market
+hours and refetches only when new bars are actually expected, greatly
+reducing rate-limit risk on repeated runs. The cache location is managed
+by yfinance-cache itself (default `~/.cache/py-yfinance-cache`).
+
+Set `STOCK_TA_CACHE_DISABLE=1` to bypass it and go straight to plain
+`yfinance` (e.g. when debugging cache issues).
+
 **Note on recency:** plain chat completions are limited to the model's
 training cutoff. For genuinely recent news, point `OPENAI_BASE_URL` at a
 provider/model with web browsing (e.g. Perplexity's `sonar` models, or
