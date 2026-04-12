@@ -1,0 +1,6 @@
+yfinance
+pandas
+ta
+openai>=1.0
+python-dotenv
+requests
