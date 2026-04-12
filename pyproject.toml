@@ -27,4 +27,4 @@ stock-ta-server = "server:main"
 Homepage = "https://github.com/felix920506/stock-ta"
 
 [tool.setuptools]
-py-modules = ["analyze", "ta_core", "report", "ai_research", "discord_post", "server"]
+py-modules = ["analyze", "ta_core", "report", "ai_research", "discord_post", "server", "log_config"]

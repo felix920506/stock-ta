@@ -14,7 +14,10 @@ completions are bounded by the model's training cutoff.
 """
 
 import json
+import logging
 import os
+
+log = logging.getLogger(__name__)
 
 
 SYSTEM_PROMPT = """You are an equity research assistant. Given a company
@@ -52,6 +55,7 @@ def research(ta_result: dict) -> dict:
     base_url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
     model    = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
+    log.info("ai request model=%s base_url=%s ticker=%s", model, base_url, ta_result.get("ticker"))
     client = OpenAI(api_key=api_key, base_url=base_url)
 
     ticker = ta_result.get("ticker", "")
@@ -79,7 +83,8 @@ def research(ta_result: dict) -> dict:
         resp = client.chat.completions.create(
             response_format={"type": "json_object"}, **kwargs
         )
-    except Exception:
+    except Exception as e:
+        log.debug("json_object response_format rejected (%s); retrying plain", e)
         resp = client.chat.completions.create(**kwargs)
 
     content = resp.choices[0].message.content or ""
@@ -88,8 +93,10 @@ def research(ta_result: dict) -> dict:
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError:
-        # Some providers (e.g. browsing models) may return prose. Keep it.
+        log.info("ai response was not JSON; treating as prose summary")
         parsed = {"summary": content.strip(), "sentiment": "neutral", "key_points": []}
+
+    log.info("ai sentiment=%s chars=%d", parsed.get("sentiment"), len(content))
 
     return {
         "summary":    parsed.get("summary", "").strip(),

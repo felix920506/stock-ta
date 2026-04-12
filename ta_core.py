@@ -6,9 +6,12 @@ scores signals. Report rendering lives in report.py.
 """
 
 import json
+import logging
 import os
 import sys
 from datetime import datetime
+
+log = logging.getLogger(__name__)
 
 try:
     import yfinance as yf
@@ -26,12 +29,15 @@ except ImportError as e:
 # Disable with STOCK_TA_CACHE_DISABLE=1 to fall back to plain yfinance.
 if os.environ.get("STOCK_TA_CACHE_DISABLE"):
     _Ticker = yf.Ticker
+    log.debug("cache disabled via STOCK_TA_CACHE_DISABLE")
 else:
     try:
         import yfinance_cache as yfc
         _Ticker = yfc.Ticker
+        log.debug("using yfinance_cache")
     except ImportError:
         _Ticker = yf.Ticker
+        log.warning("yfinance_cache not installed — falling back to plain yfinance")
 
 
 def last(series, n=1):
@@ -44,18 +50,21 @@ def last(series, n=1):
 
 def analyze(ticker: str, period: str = "6mo", interval: str = "1d") -> dict:
     """Fetch data, compute indicators, score, and return a complete result dict."""
+    log.info("analyze ticker=%s period=%s interval=%s", ticker, period, interval)
     tk = _Ticker(ticker)
     df = tk.history(period=period, interval=interval)
+    log.debug("fetched %d bars for %s", len(df), ticker)
 
     if df.empty:
+        log.warning("no data for ticker=%s", ticker)
         return {"error": f"No data returned for ticker '{ticker}'. Check if the symbol is valid."}
 
     company_name = None
     try:
         info = tk.info
         company_name = info.get("shortName") or info.get("longName")
-    except Exception:
-        pass
+    except Exception as e:
+        log.debug("info lookup failed for %s: %s", ticker, e)
 
     close  = df["Close"]
     high   = df["High"]
@@ -184,6 +193,8 @@ def analyze(ticker: str, period: str = "6mo", interval: str = "1d") -> dict:
     pivot  = round((recent["High"].max() + recent["Low"].min() + float(close.iloc[-1])) / 3, 4)
     r1     = round(2 * pivot - recent["Low"].min(), 4)
     s1     = round(2 * pivot - recent["High"].max(), 4)
+
+    log.info("result ticker=%s score=%+d label=%s", ticker.upper(), score, label)
 
     return {
         "ticker": ticker.upper(),

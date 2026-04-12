@@ -100,6 +100,12 @@ by yfinance-cache itself (default `~/.cache/py-yfinance-cache`).
 Set `STOCK_TA_CACHE_DISABLE=1` to bypass it and go straight to plain
 `yfinance` (e.g. when debugging cache issues).
 
+### Logging
+
+All modules log to stderr via stdlib `logging`. Level is controlled by
+`STOCK_TA_LOG_LEVEL` in `.env` (default `INFO`; also accepts `DEBUG`,
+`WARNING`, `ERROR`). The log format is fixed.
+
 **Note on recency:** plain chat completions are limited to the model's
 training cutoff. For genuinely recent news, point `OPENAI_BASE_URL` at a
 provider/model with web browsing (e.g. Perplexity's `sonar` models, or

@@ -14,13 +14,17 @@ Usage:
 
 import argparse
 import json
+import logging
 import os
 import sys
 
+import log_config
 import ta_core
 import report
 import ai_research
 import discord_post
+
+log = logging.getLogger("analyze")
 
 
 def _load_json_input(source: str) -> dict:
@@ -56,13 +60,15 @@ def main():
                              "or a raw JSON string (starts with '{' or '['). Skips data fetch.")
     args = parser.parse_args()
 
+    log_config.configure()
+
     if args.from_json:
         if args.ticker:
             parser.error("Do not pass a ticker together with --from-json.")
         try:
             result = _load_json_input(args.from_json)
         except (OSError, ValueError) as e:
-            print(f"[from-json] failed to read input: {e}", file=sys.stderr)
+            log.error("failed to read input: %s", e)
             sys.exit(1)
     else:
         if not args.ticker:
@@ -78,10 +84,9 @@ def main():
         try:
             result["ai_research"] = ai_research.research(result)
         except Exception as e:
-            print(f"[ai] research failed: {e}", file=sys.stderr)
+            log.error("ai research failed: %s", e)
     elif args.ai and args.from_json:
-        print("[ai] --ai ignored with --from-json (use the ai_research field in the input JSON)",
-              file=sys.stderr)
+        log.warning("--ai ignored with --from-json (use the ai_research field in the input JSON)")
 
     if args.format == "json":
         output = json.dumps(result, indent=2)
@@ -95,13 +100,12 @@ def main():
     if args.discord:
         webhook = args.discord_url or os.environ.get("DISCORD_WEBHOOK_URL")
         if not webhook:
-            print("[discord] no webhook URL set (DISCORD_WEBHOOK_URL or --discord-url)",
-                  file=sys.stderr)
+            log.error("no webhook URL set (DISCORD_WEBHOOK_URL or --discord-url)")
             sys.exit(2)
         try:
             discord_post.send(output, webhook)
         except Exception as e:
-            print(f"[discord] post failed: {e}", file=sys.stderr)
+            log.error("discord post failed: %s", e)
             sys.exit(2)
 
 

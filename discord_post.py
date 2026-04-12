@@ -1,6 +1,10 @@
 """Discord webhook sender. Splits long messages at the 2000-char limit."""
 
+import logging
+
 import requests
+
+log = logging.getLogger(__name__)
 
 
 MAX_CHARS = 1900  # leave headroom for code fences
@@ -44,7 +48,10 @@ def _chunk(text: str, limit: int = MAX_CHARS):
 
 def send(text: str, webhook_url: str) -> None:
     """POST text to a Discord webhook, splitting if needed. Raises on HTTP error."""
-    for chunk in _chunk(text):
+    chunks = _chunk(text)
+    log.info("discord post chunks=%d total_chars=%d", len(chunks), len(text))
+    for i, chunk in enumerate(chunks, 1):
         body = f"```\n{chunk}\n```"
         r = requests.post(webhook_url, json={"content": body}, timeout=15)
+        log.debug("discord chunk %d/%d -> %d", i, len(chunks), r.status_code)
         r.raise_for_status()

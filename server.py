@@ -14,14 +14,32 @@ Run:
 """
 
 import argparse
+import logging
+import time
 
 from bottle import Bottle, request, response
 
+import log_config
 import ta_core
 import report
 
+log = logging.getLogger("server")
+
 
 app = Bottle()
+
+
+@app.hook("before_request")
+def _log_request_start():
+    request.environ["_start_time"] = time.monotonic()
+
+
+@app.hook("after_request")
+def _log_request_end():
+    start = request.environ.get("_start_time")
+    dur_ms = (time.monotonic() - start) * 1000 if start else 0
+    log.info('%s %s -> %s (%.1fms)',
+             request.method, request.path, response.status_code, dur_ms)
 
 
 _TRUTHY = {"1", "true", "yes", "on", "y", "t"}
@@ -36,6 +54,7 @@ def _coerce_bool(v, default=False):
 
 
 def _error(status: int, message: str):
+    log.warning("error %d: %s", status, message)
     response.status = status
     response.content_type = "application/json"
     return {"error": message}
@@ -113,7 +132,9 @@ def main():
     except ImportError:
         pass
 
-    app.run(host=args.host, port=args.port, debug=args.debug, quiet=not args.debug)
+    log_config.configure()
+    log.info("stock-ta server listening on %s:%d", args.host, args.port)
+    app.run(host=args.host, port=args.port, debug=args.debug, quiet=True)
 
 
 if __name__ == "__main__":
