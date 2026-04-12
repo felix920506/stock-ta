@@ -5,3 +5,4 @@ openai>=1.0
 python-dotenv
 requests
 yfinance-cache
+bottle
