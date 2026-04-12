@@ -91,14 +91,19 @@ OpenRouter, Perplexity, Groq, LM Studio, Ollama, etc.
 
 ### Caching
 
-Uses [`yfinance-cache`](https://pypi.org/project/yfinance-cache/) when
-installed — it's a smarter drop-in for `yfinance` that understands market
-hours and refetches only when new bars are actually expected, greatly
-reducing rate-limit risk on repeated runs. The cache location is managed
-by yfinance-cache itself (default `~/.cache/py-yfinance-cache`).
+Uses [`yfinance-cache`](https://pypi.org/project/yfinance-cache/) by
+default — a smarter drop-in for `yfinance` that understands market hours
+and refetches only when new bars are expected, greatly reducing
+rate-limit risk on repeated runs.
 
-Set `STOCK_TA_CACHE_DISABLE=1` to bypass it and go straight to plain
-`yfinance` (e.g. when debugging cache issues).
+| Env | Default | |
+|---|---|---|
+| `STOCK_TA_CACHE_DIR` | `./.cache/yfinance-cache` (relative to cwd) | Cache location |
+| `STOCK_TA_CACHE_DISABLE` | unset | `1` to bypass and use plain `yfinance` |
+
+At `INFO` log level you'll see a line like
+`ta_core: yfinance_cache enabled at /path/to/project/.cache/yfinance-cache`
+on the first analysis of each run, confirming the cache is active.
 
 ### Logging
 

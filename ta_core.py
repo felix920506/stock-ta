@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -24,20 +25,59 @@ except ImportError as e:
     print(json.dumps({"error": f"Missing dependency: {e}. Run: pip install -r requirements.txt"}))
     sys.exit(1)
 
-# yfinance-cache is a smarter drop-in: understands market hours, refetches
-# only when new bars are expected, and greatly reduces rate-limit risk.
-# Disable with STOCK_TA_CACHE_DISABLE=1 to fall back to plain yfinance.
-if os.environ.get("STOCK_TA_CACHE_DISABLE"):
-    _Ticker = yf.Ticker
-    log.debug("cache disabled via STOCK_TA_CACHE_DISABLE")
-else:
+
+_Ticker = None
+
+
+def _resolve_ticker():
+    """Lazy, logged resolution of the Ticker class. yfinance-cache is a
+    smarter drop-in: it understands market hours and refetches only when
+    new bars are expected. Cache lives at ~/.cache/stock-ta/yfinance-cache
+    by default; override with STOCK_TA_CACHE_DIR. Disable entirely with
+    STOCK_TA_CACHE_DISABLE=1 (falls back to plain yfinance)."""
+    global _Ticker
+    if _Ticker is not None:
+        return _Ticker
+
+    if os.environ.get("STOCK_TA_CACHE_DISABLE"):
+        log.info("yfinance cache disabled via STOCK_TA_CACHE_DISABLE")
+        _Ticker = yf.Ticker
+        return _Ticker
+
     try:
         import yfinance_cache as yfc
-        _Ticker = yfc.Ticker
-        log.debug("using yfinance_cache")
     except ImportError:
+        log.warning("yfinance_cache not installed — using plain yfinance (no caching)")
         _Ticker = yf.Ticker
-        log.warning("yfinance_cache not installed — falling back to plain yfinance")
+        return _Ticker
+
+    cache_dir = os.environ.get("STOCK_TA_CACHE_DIR") or str(
+        Path.cwd() / ".cache" / "yfinance-cache"
+    )
+    Path(cache_dir).mkdir(parents=True, exist_ok=True)
+
+    # yfinance_cache ≥0.8 exposes the cache manager under yfc_cache_manager;
+    # older versions had SetCacheDirpath at the top level. Try both.
+    set_fn = None
+    get_fn = None
+    mgr = getattr(yfc, "yfc_cache_manager", None)
+    if mgr is not None:
+        set_fn = getattr(mgr, "SetCacheDirpath", None)
+        get_fn = getattr(mgr, "GetCacheDirpath", None)
+    if set_fn is None:
+        set_fn = getattr(yfc, "SetCacheDirpath", None)
+        get_fn = getattr(yfc, "GetCacheDirpath", None)
+
+    if set_fn is not None:
+        set_fn(cache_dir)
+        actual = get_fn() if get_fn else cache_dir
+        log.info("yfinance_cache enabled at %s", actual)
+    else:
+        default = get_fn() if get_fn else "package default"
+        log.info("yfinance_cache enabled (cannot override path; using %s)", default)
+
+    _Ticker = yfc.Ticker
+    return _Ticker
 
 
 def last(series, n=1):
@@ -51,7 +91,7 @@ def last(series, n=1):
 def analyze(ticker: str, period: str = "6mo", interval: str = "1d") -> dict:
     """Fetch data, compute indicators, score, and return a complete result dict."""
     log.info("analyze ticker=%s period=%s interval=%s", ticker, period, interval)
-    tk = _Ticker(ticker)
+    tk = _resolve_ticker()(ticker)
     df = tk.history(period=period, interval=interval)
     log.debug("fetched %d bars for %s", len(df), ticker)
 
