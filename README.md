@@ -122,7 +122,8 @@ See `references/indicators.md` for the interpretation guide.
 ## Files
 
 - `analyze.py` — CLI entry point
-- `ta_core.py` — indicator computation, scoring, report rendering
+- `ta_core.py` — indicator computation and scoring
+- `report.py` — text report renderer
 - `ai_research.py` — OpenAI-compatible client for company research
 - `discord_post.py` — webhook sender (handles the 2000-char limit)
 

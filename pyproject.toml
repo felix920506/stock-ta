@@ -24,4 +24,4 @@ stock-ta = "analyze:main"
 Homepage = "https://github.com/felix920506/stock-ta"
 
 [tool.setuptools]
-py-modules = ["analyze", "ta_core", "ai_research", "discord_post"]
+py-modules = ["analyze", "ta_core", "report", "ai_research", "discord_post"]

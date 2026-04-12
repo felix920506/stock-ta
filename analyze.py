@@ -14,6 +14,7 @@ import os
 import sys
 
 import ta_core
+import report
 import ai_research
 import discord_post
 
@@ -39,7 +40,7 @@ def main():
     result = ta_core.analyze(args.ticker, args.period, args.interval)
 
     if "error" in result:
-        print(json.dumps(result) if args.format == "json" else ta_core.format_report(result),
+        print(json.dumps(result) if args.format == "json" else report.format_report(result),
               file=sys.stderr)
         sys.exit(1)
 
@@ -52,7 +53,7 @@ def main():
     if args.format == "json":
         output = json.dumps(result, indent=2)
     else:
-        output = ta_core.format_report(result)
+        output = report.format_report(result)
         if "ai_research" in result:
             output += "\n" + ai_research.format_ai_section(result["ai_research"])
 
