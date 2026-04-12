@@ -107,9 +107,14 @@ on the first analysis of each run, confirming the cache is active.
 
 ### Logging
 
-All modules log to stderr via stdlib `logging`. Level is controlled by
-`STOCK_TA_LOG_LEVEL` in `.env` (default `INFO`; also accepts `DEBUG`,
-`WARNING`, `ERROR`). The log format is fixed.
+All modules log via stdlib `logging`. Config lives in `.env`:
+
+| Env | Default | Notes |
+|---|---|---|
+| `STOCK_TA_LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `STOCK_TA_LOG_FILE` | `log.txt` | File path, or `-`/`stderr` for stderr, `stdout` for stdout |
+
+The log format is fixed.
 
 **Note on recency:** plain chat completions are limited to the model's
 training cutoff. For genuinely recent news, point `OPENAI_BASE_URL` at a
@@ -209,6 +214,19 @@ docker run --rm -p 8000:8000 \
 
 The image runs `server.py` on `0.0.0.0:8000`. Cache persists in a named
 volume at `/data`. Pass provider secrets via `-e` or `--env-file .env`.
+
+#### Docker Compose
+
+A minimal example is in `docker-compose.example.yml`:
+
+```bash
+cp docker-compose.example.yml docker-compose.yml
+cp .env.example .env   # fill in keys
+docker compose up -d
+```
+
+It builds the image locally, mounts `.env`, exposes port 8000, persists
+the yfinance cache in a named volume, and adds a `/health` check.
 
 ## Files
 

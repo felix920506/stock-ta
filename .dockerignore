@@ -8,6 +8,8 @@ __pycache__/
 *.pyc
 Dockerfile
 .dockerignore
+docker-compose.yml
+docker-compose.example.yml
 README.md
 SKILL.md
 references/
