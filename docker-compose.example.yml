@@ -1,7 +1,7 @@
 services:
   stock-ta:
     build: .
-    # or, pull a pre-built image:
+    # or, pull the image built by CI:
     # image: ghcr.io/felix920506/stock-ta:latest
     container_name: stock-ta
     restart: unless-stopped
