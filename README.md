@@ -89,22 +89,6 @@ DISCORD_WEBHOOK_URL=
 `OPENAI_BASE_URL` accepts any OpenAI-compatible endpoint — OpenAI,
 OpenRouter, Perplexity, Groq, LM Studio, Ollama, etc.
 
-### Caching
-
-Uses [`yfinance-cache`](https://pypi.org/project/yfinance-cache/) by
-default — a smarter drop-in for `yfinance` that understands market hours
-and refetches only when new bars are expected, greatly reducing
-rate-limit risk on repeated runs.
-
-| Env | Default | |
-|---|---|---|
-| `STOCK_TA_CACHE_DIR` | `./.cache/yfinance-cache` (relative to cwd) | Cache location |
-| `STOCK_TA_CACHE_DISABLE` | unset | `1` to bypass and use plain `yfinance` |
-
-At `INFO` log level you'll see a line like
-`ta_core: yfinance_cache enabled at /path/to/project/.cache/yfinance-cache`
-on the first analysis of each run, confirming the cache is active.
-
 ### Logging
 
 All modules log via stdlib `logging`. Config lives in `.env`:
@@ -225,8 +209,8 @@ cp .env.example .env   # fill in keys
 docker compose up -d
 ```
 
-It builds the image locally, mounts `.env`, exposes port 8000, persists
-the yfinance cache in a named volume, and adds a `/health` check.
+It uses the prebuilt image, mounts `.env`, exposes port 8000, persists
+data in a named volume, and adds a `/health` check.
 
 ## Files
 

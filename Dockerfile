@@ -7,8 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY analyze.py ta_core.py report.py ai_research.py discord_post.py server.py log_config.py ./
 
-ENV STOCK_TA_CACHE_DIR=/data/yfinance-cache \
-    STOCK_TA_LOG_LEVEL=INFO \
+ENV STOCK_TA_LOG_LEVEL=INFO \
     STOCK_TA_LOG_FILE=- \
     PYTHONUNBUFFERED=1
 
