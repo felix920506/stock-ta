@@ -190,14 +190,13 @@ Returns `{"status":"ok"}`.
 ```bash
 docker build -t stock-ta .
 docker run --rm -p 8000:8000 \
-    -v stock-ta-cache:/data \
     -e OPENAI_API_KEY=... \
     -e DISCORD_WEBHOOK_URL=... \
     stock-ta
 ```
 
-The image runs `server.py` on `0.0.0.0:8000`. Cache persists in a named
-volume at `/data`. Pass provider secrets via `-e` or `--env-file .env`.
+The image runs `server.py` on `0.0.0.0:8000`. Pass provider secrets via
+`-e` or `--env-file .env`.
 
 #### Docker Compose
 
@@ -209,8 +208,8 @@ cp .env.example .env   # fill in keys
 docker compose up -d
 ```
 
-It uses the prebuilt image, mounts `.env`, exposes port 8000, persists
-data in a named volume, and adds a `/health` check.
+It uses the prebuilt image, mounts `.env`, exposes port 8000, and adds a
+`/health` check.
 
 ## Files
 
