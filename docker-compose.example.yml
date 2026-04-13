@@ -1,8 +1,8 @@
 services:
   stock-ta:
-    build: .
-    # or, pull the image built by CI:
-    # image: ghcr.io/felix920506/stock-ta:latest
+    image: ghcr.io/felix920506/stock-ta:latest
+    # or, build locally instead:
+    # build: .
     container_name: stock-ta
     restart: unless-stopped
     network_mode: bridge
