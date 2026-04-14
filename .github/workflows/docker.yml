@@ -42,6 +42,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: false
+          provenance: false
           outputs: type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha
           cache-to: type=gha,mode=max
