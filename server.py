@@ -29,6 +29,13 @@ log = logging.getLogger("server")
 app = Bottle()
 
 
+def _client_ip() -> str:
+    forwarded_for = request.get_header("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip()
+    return request.remote_addr or "-"
+
+
 @app.hook("before_request")
 def _log_request_start():
     request.environ["_start_time"] = time.monotonic()
@@ -38,8 +45,12 @@ def _log_request_start():
 def _log_request_end():
     start = request.environ.get("_start_time")
     dur_ms = (time.monotonic() - start) * 1000 if start else 0
-    log.info('%s %s -> %s (%.1fms)',
-             request.method, request.path, response.status_code, dur_ms)
+    ticker = request.environ.get("_stock_ta_ticker", "-")
+    period = request.environ.get("_stock_ta_period", "-")
+    interval = request.environ.get("_stock_ta_interval", "-")
+    log.info('%s %s %s %s period=%s interval=%s -> %s (%.1fms)',
+             request.method, request.path, _client_ip(), ticker, period, interval,
+             response.status_code, dur_ms)
 
 
 _TRUTHY = {"1", "true", "yes", "on", "y", "t"}
@@ -73,6 +84,9 @@ def analyze_endpoint():
         params = {k: request.query.getunicode(k) for k in request.query.keys()}
 
     ticker = params.get("ticker")
+    request.environ["_stock_ta_ticker"] = ticker if isinstance(ticker, str) else "-"
+    request.environ["_stock_ta_period"] = params.get("period") or "-"
+    request.environ["_stock_ta_interval"] = params.get("interval") or "-"
     if not ticker or not isinstance(ticker, str):
         return _error(400, "`ticker` is required")
 
